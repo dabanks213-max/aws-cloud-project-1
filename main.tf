@@ -25,6 +25,13 @@ resource "aws_s3_object" "object" {
   content_type = "text/html"
 }
 
+resource "aws_s3_object" "error-object" {
+  bucket       = aws_s3_bucket.test-bucket.id
+  key          = "404.html"
+  source       = "${path.module}/404.html"
+  content_type = "text/html"
+}
+
 # Configures the S3 bucket for website hosting, specifying "index.html" as the index document.
 resource "aws_s3_bucket_website_configuration" "bucket-website" {
   bucket = aws_s3_bucket.test-bucket.id
@@ -68,8 +75,14 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   custom_error_response {
-    error_code = 404
-    response_code = 404
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/404.html"
+  }
+
+    custom_error_response {
+    error_code         = 403
+    response_code      = 404
     response_page_path = "/404.html"
   }
 

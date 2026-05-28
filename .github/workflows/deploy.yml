@@ -25,7 +25,7 @@ jobs:
 
       - name: Sync files to S3
         run: |
-          aws s3 sync . s3://${{ vars.BUCKET_NAME }} --exclude ".git/*" --exclude ".github/*" --delete
+          aws s3 sync . s3://${{ vars.BUCKET_NAME }} --exclude "*" --include "*.html" --delete
 
       - name: Invalidate CloudFront cache
         run: |
