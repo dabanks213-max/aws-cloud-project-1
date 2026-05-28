@@ -2,11 +2,18 @@
 
 # Creates an S3 bucket named "my-test-bucket-215616" with a tag for identification.
 resource "aws_s3_bucket" "test-bucket" {
-  bucket = "my-test-bucket-215616"
+  bucket        = "my-test-bucket-215616"
   force_destroy = true
 
   tags = {
     Name = "my-test-bucket-215616"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "test-bucket-versioning" {
+  bucket = aws_s3_bucket.test-bucket.id
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
@@ -60,6 +67,12 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  custom_error_response {
+    error_code = 404
+    response_code = 404
+    response_page_path = "/404.html"
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
@@ -74,7 +87,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 # Applies a bucket policy to the S3 bucket that allows CloudFront to access the objects in the bucket. The policy is generated using a template file (bucket_policy.tpl) that includes the necessary permissions and conditions for secure access.
 resource "aws_s3_bucket_policy" "bucket-policy" {
   bucket = aws_s3_bucket.test-bucket.id
-  policy = templatefile("bucket_policy.tpl", {
+  policy = templatefile("${path.module}/bucket_policy.tpl", {
     bucket_arn       = aws_s3_bucket.test-bucket.arn
     distribution_arn = aws_cloudfront_distribution.s3_distribution.arn
   })
@@ -109,8 +122,8 @@ resource "aws_iam_policy" "github-actions" {
 }
 
 resource "aws_iam_openid_connect_provider" "github-actions-id-provider" {
-  url = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"] 
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }
 
 resource "aws_iam_role" "github-actions-role" {
@@ -135,7 +148,7 @@ resource "aws_iam_role" "github-actions-role" {
 }
 
 resource "aws_iam_role_policy_attachment" "github-actions-attach" {
-  role = aws_iam_role.github-actions-role.name
+  role       = aws_iam_role.github-actions-role.name
   policy_arn = aws_iam_policy.github-actions.arn
 }
 
