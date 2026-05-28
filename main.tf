@@ -3,6 +3,7 @@
 # Creates an S3 bucket named "my-test-bucket-215616" with a tag for identification.
 resource "aws_s3_bucket" "test-bucket" {
   bucket = "my-test-bucket-215616"
+  force_destroy = true
 
   tags = {
     Name = "my-test-bucket-215616"
