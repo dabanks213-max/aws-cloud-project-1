@@ -1,9 +1,9 @@
-name: Deploy to S3
+name: Deploy to Staging
 
 on:
   push:
     branches:
-      - main
+      - staging
 
 permissions:
   id-token: write
@@ -25,8 +25,8 @@ jobs:
 
       - name: Sync files to S3
         run: |
-          aws s3 sync . s3://${{ vars.BUCKET_NAME }} --exclude ".git/*" --exclude ".github/*" --delete
+          aws s3 sync . s3://${{ vars.STAGING_BUCKET_NAME }} --exclude "*" --include "*.html" --delete
 
       - name: Invalidate CloudFront cache
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ vars.DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_DISTRIBUTION_ID }} --paths "/*"
