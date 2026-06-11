@@ -122,7 +122,9 @@ resource "aws_iam_policy" "github-actions" {
         ]
         Resource = [
           aws_s3_bucket.test-bucket.arn,
-          "${aws_s3_bucket.test-bucket.arn}/*"
+          "${aws_s3_bucket.test-bucket.arn}/*",
+          aws_s3_bucket.test-staging-bucket.arn,
+          "${aws_s3_bucket.test-staging-bucket.arn}/*"
         ]
       },
       {
