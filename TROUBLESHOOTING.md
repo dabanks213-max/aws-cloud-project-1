@@ -184,3 +184,29 @@ aws s3 sync . s3://${{ vars.BUCKET_NAME }} --exclude "*" --include "*.html" --de
 
 **Why it works:**
 The `--exclude "*"` flag excludes everything first, then `--include "*.html"` adds back only HTML files. The `--delete` flag removes any files from S3 that no longer exist in the repo, keeping the bucket clean.
+
+---
+
+## 9. CloudFront CreateInvalidation Failing After Terraform Rebuild
+
+**Problem:**
+The GitHub Actions workflow failed on the invalidation step with `not authorized to perform: cloudfront:CreateInvalidation` even though it worked before.
+
+**Cause:**
+When `terraform destroy` and `terraform apply` are run, CloudFront distributions are recreated with new distribution IDs. The IAM policy was scoped to the old distribution ARN, so it no longer matched. The GitHub variables `DISTRIBUTION_ID` and `STAGING_DISTRIBUTION_ID` were also pointing at the old IDs.
+
+**Fix:**
+Two things need to be updated after every `terraform apply` that recreates distributions:
+
+1. Run `terraform output` to get the new distribution IDs and update the GitHub variables `DISTRIBUTION_ID` and `STAGING_DISTRIBUTION_ID` under **Settings → Secrets and variables → Actions → Variables**
+
+2. Make sure the IAM policy references Terraform resource attributes directly rather than hardcoded ARNs so it always stays in sync:
+```hcl
+Resource = [
+  aws_cloudfront_distribution.s3_distribution.arn,
+  aws_cloudfront_distribution.staging_distribution.arn
+]
+```
+
+**Why it works:**
+Terraform resolves resource ARNs at apply time, so the policy is always updated with the correct ARNs. The GitHub variables need to be updated manually since they store the distribution ID for the invalidation command.

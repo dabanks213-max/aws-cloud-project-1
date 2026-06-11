@@ -446,6 +446,12 @@ terraform destroy
 
 Your GitHub repository and files are not affected.
 
+> **Important:** After running `terraform apply` again to rebuild, CloudFront distributions are recreated with new IDs. You must update the following GitHub variables with the new values from `terraform output`:
+> - `DISTRIBUTION_ID`
+> - `STAGING_DISTRIBUTION_ID`
+>
+> Without this update the GitHub Actions invalidation step will fail with an AccessDenied error.
+
 ---
 
 ## Common Issues
