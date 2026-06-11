@@ -130,7 +130,10 @@ resource "aws_iam_policy" "github-actions" {
       {
         Effect   = "Allow"
         Action   = "cloudfront:CreateInvalidation"
-        Resource = aws_cloudfront_distribution.s3_distribution.arn
+        Resource = [
+          aws_cloudfront_distribution.s3_distribution.arn,
+          aws_cloudfront_distribution.staging_distribution.arn
+        ]
       }
     ]
   })
